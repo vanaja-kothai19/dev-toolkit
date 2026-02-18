@@ -42,7 +42,3 @@ Features:
 - CSS
 - JavaScript (Vanilla JS)
 
----
-
-## 📂 Project Structure
-
