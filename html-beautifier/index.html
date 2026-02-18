@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Beautifier</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --panel-soft: #1f2630;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-strong: #79c0ff;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      --radius: 16px;
+      --space-1: 8px;
+      --space-2: 12px;
+      --space-3: 16px;
+      --space-4: 20px;
+      --space-5: 28px;
+      --space-6: 36px;
+      --font-code: "JetBrains Mono", "Fira Code", "Source Code Pro", Consolas, monospace;
+      --font-ui: "Sora", "Space Grotesk", "Poppins", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      background: radial-gradient(1200px 900px at 10% -10%, rgba(88, 166, 255, 0.15), transparent 60%),
+        radial-gradient(1000px 800px at 120% 10%, rgba(87, 214, 180, 0.12), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      background: rgba(13, 17, 23, 0.88);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .title-group h1 {
+      margin: 0 0 6px 0;
+      font-size: 1.5rem;
+      letter-spacing: 0.4px;
+    }
+
+    .title-group p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .select-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--panel-soft);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    select {
+      background: transparent;
+      color: var(--text);
+      border: none;
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn {
+      background: var(--panel-soft);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, border 0.2s ease;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(88, 166, 255, 0.3), rgba(87, 214, 180, 0.2));
+      border-color: rgba(88, 166, 255, 0.6);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(121, 192, 255, 0.6);
+      background: rgba(88, 166, 255, 0.12);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-5);
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.3px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .editor {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0b0f14;
+      min-height: 360px;
+    }
+
+    .line-numbers {
+      padding: var(--space-3);
+      background: #0b0f14;
+      color: #5c6570;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      text-align: right;
+      min-width: 48px;
+      user-select: none;
+      white-space: pre;
+      border-right: 1px solid var(--border);
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      padding: var(--space-3);
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      color: var(--text);
+      background: transparent;
+      line-height: 1.5;
+    }
+
+    textarea[readonly] {
+      color: #b8c1cc;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .validation-message {
+      min-height: 22px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .validation-message.error {
+      color: #ff6b6b;
+    }
+
+    .validation-message.success {
+      color: #3ddc97;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .toggle-row input {
+      accent-color: #58a6ff;
+    }
+
+    @media (max-width: 960px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="title-group">
+        <h1>HTML Beautifier</h1>
+        <p>Clean, readable HTML with accurate nesting and indentation.</p>
+      </div>
+      <div class="toolbar">
+        <div class="select-wrap">
+          <span>Tab Size</span>
+          <select id="tabSize">
+            <option value="2">2 Spaces</option>
+            <option value="4" selected>4 Spaces</option>
+          </select>
+        </div>
+        <button class="btn primary" id="beautifyBtn">Beautify HTML</button>
+        <button class="btn" id="clearBtn">Clear</button>
+        <button class="btn" id="copyBtn">Copy Output</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section class="card">
+        <h2>Input HTML</h2>
+        <div class="meta-row">
+          <span class="hint">Paste unformatted HTML here.</span>
+          <span id="inputCount">0 chars</span>
+        </div>
+        <div class="editor">
+          <pre class="line-numbers" id="inputLines">1</pre>
+          <textarea id="inputArea" spellcheck="false" placeholder="<div><span>Messy HTML</span></div>"></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Beautified Output</h2>
+        <div class="meta-row">
+          <span class="hint">Formatted HTML appears here.</span>
+          <span id="outputCount">0 chars</span>
+        </div>
+        <div id="validationMessage" class="validation-message"></div>
+        <label class="toggle-row">
+          <input type="checkbox" id="showCorrectedSource" disabled />
+          <span>Show corrected source</span>
+        </label>
+        <div class="editor">
+          <pre class="line-numbers" id="outputLines">1</pre>
+          <textarea id="outputArea" readonly></textarea>
+        </div>
+        <div class="footer-actions">
+          <span class="hint">Tip: Use copy to move formatted HTML to your clipboard.</span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Line numbers + counters
+    const inputArea = document.getElementById("inputArea");
+    const outputArea = document.getElementById("outputArea");
+    const inputLines = document.getElementById("inputLines");
+    const outputLines = document.getElementById("outputLines");
+    const inputCount = document.getElementById("inputCount");
+    const outputCount = document.getElementById("outputCount");
+    const tabSizeSelect = document.getElementById("tabSize");
+    const copyBtn = document.getElementById("copyBtn");
+    const validationMessage = document.getElementById("validationMessage");
+    const showCorrectedSource = document.getElementById("showCorrectedSource");
+
+    let lastBeautifiedOutput = "";
+    let lastCorrectedSource = "";
+    let hasAutoCorrection = false;
+
+    const voidTags = new Set([
+      "area", "base", "br", "col", "embed", "hr", "img", "input",
+      "link", "meta", "param", "source", "track", "wbr"
+    ]);
+
+    const inlineTags = new Set([
+      "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
+      "em", "i", "kbd", "mark", "q", "s", "samp", "small", "span", "strong",
+      "sub", "sup", "time", "u", "var", "wbr"
+    ]);
+
+    const blockTags = new Set([
+      "address", "article", "aside", "blockquote", "div", "section", "header",
+      "footer", "main", "nav", "p", "ul", "ol", "li", "table", "thead", "tbody",
+      "tfoot", "tr", "td", "th", "form", "fieldset", "legend", "figure",
+      "figcaption", "pre", "code", "h1", "h2", "h3", "h4", "h5", "h6"
+    ]);
+
+    const inlineBlockCandidates = new Set([
+      "li", "p", "h1", "h2", "h3", "h4", "h5", "h6"
+    ]);
+
+    function updateLineNumbers(textarea, lineElement) {
+      const lines = textarea.value.split("\n").length || 1;
+      let output = "";
+      for (let i = 1; i <= lines; i += 1) {
+        output += i + (i < lines ? "\n" : "");
+      }
+      lineElement.textContent = output;
+    }
+
+    function syncScroll(textarea, lineElement) {
+      lineElement.scrollTop = textarea.scrollTop;
+    }
+
+    function updateCounts() {
+      inputCount.textContent = `${inputArea.value.length} chars`;
+      outputCount.textContent = `${outputArea.value.length} chars`;
+    }
+
+    function getTagName(tag) {
+      return tag.replace(/<|>|\//g, "").trim().split(/\s+/)[0].toLowerCase();
+    }
+
+    function isSelfClosing(tag) {
+      return tag.endsWith("/>") || voidTags.has(getTagName(tag));
+    }
+
+    function isClosing(tag) {
+      return /^<\//.test(tag);
+    }
+
+    function isOpening(tag) {
+      return /^<[^!/].*>$/.test(tag) && !isClosing(tag) && !isSelfClosing(tag);
+    }
+
+    function isSpecialTag(tag) {
+      return /^<!|^<\?/.test(tag);
+    }
+
+    function normalizeText(text) {
+      return text.replace(/\s+/g, " ").trim();
+    }
+
+    function getWhitespaceFlags(text) {
+      return {
+        hasLeading: /^\s/.test(text),
+        hasTrailing: /\s$/.test(text)
+      };
+    }
+
+    function tokenizeHTML(html) {
+      const tokens = [];
+      let i = 0;
+      while (i < html.length) {
+        const char = html[i];
+        if (char === "<") {
+          const closeIndex = html.indexOf(">", i);
+          if (closeIndex === -1) {
+            tokens.push({ type: "text", value: html.slice(i) });
+            break;
+          }
+          tokens.push({ type: "tag", value: html.slice(i, closeIndex + 1) });
+          i = closeIndex + 1;
+        } else {
+          let next = html.indexOf("<", i);
+          if (next === -1) {
+            next = html.length;
+          }
+          tokens.push({ type: "text", value: html.slice(i, next) });
+          i = next;
+        }
+      }
+      return tokens;
+    }
+
+    function tryInlineCluster(tokens, startIndex, maxTextLength) {
+      const startToken = tokens[startIndex];
+      if (!startToken || startToken.type !== "tag" || !isOpening(startToken.value)) {
+        return null;
+      }
+
+      const startName = getTagName(startToken.value);
+      if (!inlineTags.has(startName)) {
+        return null;
+      }
+
+      const stack = [startName];
+      const parts = [startToken.value.trim()];
+      let textLength = 0;
+      let pendingSpace = false;
+
+      for (let i = startIndex + 1; i < tokens.length; i += 1) {
+        const token = tokens[i];
+        if (token.type === "tag") {
+          if (pendingSpace && parts.length && !parts[parts.length - 1].endsWith(" ")) {
+            parts.push(" ");
+            pendingSpace = false;
+          }
+          if (isSpecialTag(token.value)) {
+            return null;
+          }
+          const name = getTagName(token.value);
+          if (isClosing(token.value)) {
+            if (!inlineTags.has(name)) {
+              return null;
+            }
+            const last = stack.pop();
+            if (last !== name) {
+              return null;
+            }
+            parts.push(token.value.trim());
+            if (stack.length === 0) {
+              const line = parts.join("").trim();
+              if (textLength <= maxTextLength) {
+                return { line, nextIndex: i };
+              }
+              return null;
+            }
+          } else if (isSelfClosing(token.value)) {
+            if (blockTags.has(name)) {
+              return null;
+            }
+            parts.push(token.value.trim());
+          } else {
+            if (blockTags.has(name)) {
+              return null;
+            }
+            if (!inlineTags.has(name)) {
+              return null;
+            }
+            stack.push(name);
+            parts.push(token.value.trim());
+          }
+        } else {
+          if (/\S/.test(token.value)) {
+            const normalized = normalizeText(token.value);
+            const flags = getWhitespaceFlags(token.value);
+            textLength += normalized.length;
+            if (textLength > maxTextLength) {
+              return null;
+            }
+            if ((pendingSpace || flags.hasLeading) && parts.length && !parts[parts.length - 1].endsWith(" ")) {
+              parts.push(" ");
+            }
+            parts.push(normalized);
+            pendingSpace = flags.hasTrailing;
+          } else {
+            pendingSpace = true;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function tryInlineBlockCluster(tokens, startIndex, maxTextLength) {
+      const startToken = tokens[startIndex];
+      if (!startToken || startToken.type !== "tag" || !isOpening(startToken.value)) {
+        return null;
+      }
+
+      const startName = getTagName(startToken.value);
+      if (!inlineBlockCandidates.has(startName)) {
+        return null;
+      }
+
+      const stack = [startName];
+      const parts = [startToken.value.trim()];
+      let textLength = 0;
+      let pendingSpace = false;
+
+      for (let i = startIndex + 1; i < tokens.length; i += 1) {
+        const token = tokens[i];
+        if (token.type === "tag") {
+          if (pendingSpace && parts.length && !parts[parts.length - 1].endsWith(" ")) {
+            parts.push(" ");
+            pendingSpace = false;
+          }
+          if (isSpecialTag(token.value)) {
+            return null;
+          }
+          const name = getTagName(token.value);
+          if (isClosing(token.value)) {
+            const last = stack.pop();
+            if (last !== name) {
+              return null;
+            }
+            parts.push(token.value.trim());
+            if (stack.length === 0) {
+              const line = parts.join("").trim();
+              if (textLength <= maxTextLength) {
+                return { line, nextIndex: i };
+              }
+              return null;
+            }
+          } else if (isSelfClosing(token.value)) {
+            if (blockTags.has(name) && !inlineTags.has(name)) {
+              return null;
+            }
+            parts.push(token.value.trim());
+          } else {
+            if (blockTags.has(name) && !inlineTags.has(name)) {
+              return null;
+            }
+            if (!inlineTags.has(name) && name !== startName) {
+              return null;
+            }
+            stack.push(name);
+            parts.push(token.value.trim());
+          }
+        } else {
+          if (/\S/.test(token.value)) {
+            const normalized = normalizeText(token.value);
+            const flags = getWhitespaceFlags(token.value);
+            textLength += normalized.length;
+            if (textLength > maxTextLength) {
+              return null;
+            }
+            if ((pendingSpace || flags.hasLeading) && parts.length && !parts[parts.length - 1].endsWith(" ")) {
+              parts.push(" ");
+            }
+            parts.push(normalized);
+            pendingSpace = flags.hasTrailing;
+          } else {
+            pendingSpace = true;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function beautifyHTML(html, indentSize) {
+      const tokens = tokenizeHTML(html.replace(/\r\n?/g, "\n"));
+      let indentLevel = 0;
+      const indentUnit = " ".repeat(indentSize);
+      const output = [];
+      const inlineTextLimit = 40;
+      const inlineBlockTextLimit = 80;
+
+      for (let i = 0; i < tokens.length; i += 1) {
+        const token = tokens[i];
+        if (token.type === "tag") {
+          if (isSpecialTag(token.value)) {
+            output.push(indentUnit.repeat(indentLevel) + token.value.trim());
+            continue;
+          }
+
+          if (isClosing(token.value)) {
+            indentLevel = Math.max(indentLevel - 1, 0);
+          }
+
+          const name = getTagName(token.value);
+          if (inlineBlockCandidates.has(name) && isOpening(token.value)) {
+            const cluster = tryInlineBlockCluster(tokens, i, inlineBlockTextLimit);
+            if (cluster) {
+              output.push(indentUnit.repeat(indentLevel) + cluster.line);
+              i = cluster.nextIndex;
+              continue;
+            }
+          }
+          if (inlineTags.has(name) && isOpening(token.value)) {
+            const cluster = tryInlineCluster(tokens, i, inlineTextLimit);
+            if (cluster) {
+              output.push(indentUnit.repeat(indentLevel) + cluster.line);
+              i = cluster.nextIndex;
+              continue;
+            }
+          }
+
+          output.push(indentUnit.repeat(indentLevel) + token.value.trim());
+
+          if (isOpening(token.value)) {
+            indentLevel += 1;
+          }
+        } else {
+          const text = normalizeText(token.value);
+          if (text) {
+            output.push(indentUnit.repeat(indentLevel) + text);
+          }
+        }
+      }
+
+      return output.join("\n");
+    }
+
+    function setValidationMessage(message, type = "") {
+      validationMessage.textContent = message;
+      validationMessage.classList.remove("error", "success");
+      if (type) {
+        validationMessage.classList.add(type);
+      }
+    }
+
+    function renderOutputFromState() {
+      const shouldShowCorrected = hasAutoCorrection && showCorrectedSource.checked;
+      outputArea.value = shouldShowCorrected ? lastCorrectedSource : lastBeautifiedOutput;
+      updateLineNumbers(outputArea, outputLines);
+      updateCounts();
+    }
+
+    // Stack-based validator for basic HTML structure.
+    function validateHTMLStructure(html) {
+      const tagRegex = /<\/?([a-zA-Z][\w:-]*)\b[^>]*>/g;
+      const stack = [];
+      let match;
+
+      while ((match = tagRegex.exec(html)) !== null) {
+        const fullTag = match[0];
+        const tagName = match[1].toLowerCase();
+
+        if (fullTag.startsWith("<!") || fullTag.startsWith("<?")) {
+          continue;
+        }
+
+        const isClosingTag = fullTag.startsWith("</");
+        const isExplicitSelfClosing = fullTag.endsWith("/>");
+        const isVoidTag = voidTags.has(tagName);
+
+        if (isExplicitSelfClosing || isVoidTag) {
+          continue;
+        }
+
+        if (!isClosingTag) {
+          stack.push(tagName);
+          continue;
+        }
+
+        if (stack.length === 0) {
+          return { valid: false, message: `Unexpected closing tag: </${tagName}>` };
+        }
+
+        const lastOpened = stack.pop();
+        if (lastOpened !== tagName) {
+          return {
+            valid: false,
+            message: `Tag mismatch: expected </${lastOpened}> but found </${tagName}>`
+          };
+        }
+      }
+
+      if (stack.length > 0) {
+        const unclosed = stack[stack.length - 1];
+        return { valid: false, message: `Missing closing tag for: <${unclosed}>` };
+      }
+
+      return { valid: true, message: "HTML is valid." };
+    }
+
+    // Auto-correct basic structural HTML issues using stack logic.
+    // Fixes: extra closing tags, mismatched closing tags, missing closing tags.
+    function autoCorrectHTMLStructure(html) {
+      const tokens = tokenizeHTML(html);
+      const stack = [];
+      const corrected = [];
+      let hadErrors = false;
+
+      for (const token of tokens) {
+        if (token.type === "text") {
+          corrected.push(token.value);
+          continue;
+        }
+
+        const rawTag = token.value;
+        const tagName = getTagName(rawTag);
+
+        if (isSpecialTag(rawTag)) {
+          corrected.push(rawTag);
+          continue;
+        }
+
+        if (isSelfClosing(rawTag)) {
+          corrected.push(rawTag);
+          continue;
+        }
+
+        if (!isClosing(rawTag)) {
+          stack.push(tagName);
+          corrected.push(rawTag);
+          continue;
+        }
+
+        if (stack.length === 0) {
+          hadErrors = true;
+          continue;
+        }
+
+        const top = stack[stack.length - 1];
+        if (top === tagName) {
+          stack.pop();
+          corrected.push(rawTag);
+          continue;
+        }
+
+        hadErrors = true;
+        while (stack.length > 0 && stack[stack.length - 1] !== tagName) {
+          corrected.push(`</${stack.pop()}>`);
+        }
+
+        if (stack.length > 0 && stack[stack.length - 1] === tagName) {
+          stack.pop();
+          corrected.push(rawTag);
+        }
+      }
+
+      while (stack.length > 0) {
+        hadErrors = true;
+        corrected.push(`</${stack.pop()}>`);
+      }
+
+      return {
+        correctedHTML: corrected.join(""),
+        hadErrors
+      };
+    }
+
+    document.getElementById("beautifyBtn").addEventListener("click", () => {
+      const source = inputArea.value;
+      const validation = validateHTMLStructure(source.trim());
+      let htmlToBeautify = source;
+
+      if (!validation.valid) {
+        const fixed = autoCorrectHTMLStructure(source);
+        htmlToBeautify = fixed.correctedHTML;
+        lastCorrectedSource = fixed.correctedHTML;
+        hasAutoCorrection = true;
+        showCorrectedSource.disabled = false;
+        setValidationMessage("HTML had structural errors. Auto-corrected.", "success");
+      } else {
+        lastCorrectedSource = "";
+        hasAutoCorrection = false;
+        showCorrectedSource.checked = false;
+        showCorrectedSource.disabled = true;
+        setValidationMessage(validation.message, "success");
+      }
+
+      const indentSize = Number(tabSizeSelect.value);
+      lastBeautifiedOutput = beautifyHTML(htmlToBeautify, indentSize);
+      renderOutputFromState();
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      inputArea.value = "";
+      outputArea.value = "";
+      lastBeautifiedOutput = "";
+      lastCorrectedSource = "";
+      hasAutoCorrection = false;
+      showCorrectedSource.checked = false;
+      showCorrectedSource.disabled = true;
+      updateLineNumbers(inputArea, inputLines);
+      updateLineNumbers(outputArea, outputLines);
+      updateCounts();
+      setValidationMessage("", "");
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      if (!outputArea.value.trim()) {
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(outputArea.value);
+        copyBtn.textContent = "Copied";
+        setTimeout(() => {
+          copyBtn.textContent = "Copy Output";
+        }, 1200);
+      } catch (err) {
+        alert("Copy failed. Please copy manually.");
+      }
+    });
+
+    inputArea.addEventListener("input", () => {
+      updateLineNumbers(inputArea, inputLines);
+      updateCounts();
+    });
+
+    showCorrectedSource.addEventListener("change", () => {
+      renderOutputFromState();
+    });
+
+    inputArea.addEventListener("scroll", () => syncScroll(inputArea, inputLines));
+    outputArea.addEventListener("scroll", () => syncScroll(outputArea, outputLines));
+
+    updateLineNumbers(inputArea, inputLines);
+    updateLineNumbers(outputArea, outputLines);
+    updateCounts();
+  </script>
+</body>
+</html>
+

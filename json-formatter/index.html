@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Formatter + Smart Auto Fix</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111936;
+      --panel-2: #0f1730;
+      --text: #dbe7ff;
+      --muted: #95a5c9;
+      --accent: #4cc9f0;
+      --accent-2: #4895ef;
+      --ok: #4ade80;
+      --error: #f87171;
+      --border: #233159;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top right, #121d40 0%, var(--bg) 45%);
+      color: var(--text);
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(11, 16, 32, 0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      width: min(1200px, 92%);
+      margin: 0 auto;
+      padding: 1rem 0;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.4px;
+    }
+
+    .app-subtitle {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .app-main {
+      width: min(1200px, 92%);
+      margin: 1rem auto 2rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+
+    .btn {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent-2);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      color: #071022;
+      border: none;
+      font-weight: 600;
+    }
+
+    .status-panel {
+      background: rgba(17, 25, 54, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+    }
+
+    .status-message {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .status-message.success {
+      color: var(--ok);
+    }
+
+    .status-message.error {
+      color: var(--error);
+    }
+
+    .counter-row {
+      margin: 0.45rem 0 0;
+      display: flex;
+      gap: 1.25rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .editor-card {
+      background: rgba(17, 25, 54, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.8rem;
+      min-height: 460px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-title {
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .code-area {
+      width: 100%;
+      flex: 1;
+      resize: vertical;
+      min-height: 420px;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem;
+      line-height: 1.5;
+      font-size: 0.92rem;
+      font-family: "Consolas", "Courier New", monospace;
+      outline: none;
+    }
+
+    .code-area:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+    }
+
+    @media (max-width: 900px) {
+      .editor-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .editor-card {
+        min-height: 300px;
+      }
+
+      .code-area {
+        min-height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="app-title">JSON Formatter + Smart Auto Fix</h1>
+      <p class="app-subtitle">Format, validate, and repair common JSON mistakes</p>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="toolbar" aria-label="Actions">
+      <button id="formatBtn" class="btn btn-primary" type="button">Format</button>
+      <button id="validateBtn" class="btn" type="button">Validate</button>
+      <button id="autoFixBtn" class="btn" type="button">Auto Fix</button>
+      <button id="clearBtn" class="btn" type="button">Clear</button>
+      <button id="copyBtn" class="btn" type="button">Copy</button>
+    </section>
+
+    <section class="status-panel" aria-live="polite">
+      <p id="statusMessage" class="status-message">Ready</p>
+      <p class="counter-row">
+        <span id="inputCount">Input: 0 chars</span>
+        <span id="outputCount">Output: 0 chars</span>
+      </p>
+    </section>
+
+    <section class="editor-grid">
+      <article class="editor-card">
+        <label for="inputJson" class="editor-title">Input JSON</label>
+        <textarea id="inputJson" class="code-area" placeholder="Paste JSON here..."></textarea>
+      </article>
+
+      <article class="editor-card">
+        <label for="outputJson" class="editor-title">Formatted Output</label>
+        <textarea id="outputJson" class="code-area" placeholder="Formatted or repaired JSON appears here..." readonly></textarea>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const inputJson = document.getElementById("inputJson");
+    const outputJson = document.getElementById("outputJson");
+    const formatBtn = document.getElementById("formatBtn");
+    const validateBtn = document.getElementById("validateBtn");
+    const autoFixBtn = document.getElementById("autoFixBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const statusMessage = document.getElementById("statusMessage");
+    const inputCount = document.getElementById("inputCount");
+    const outputCount = document.getElementById("outputCount");
+
+    function updateCounters() {
+      inputCount.textContent = `Input: ${inputJson.value.length} chars`;
+      outputCount.textContent = `Output: ${outputJson.value.length} chars`;
+    }
+
+    function setStatus(message, type = "") {
+      statusMessage.textContent = message;
+      statusMessage.className = "status-message";
+      if (type) statusMessage.classList.add(type);
+    }
+
+    function getErrorWithLineColumn(rawText, parseError) {
+      const match = parseError.message.match(/position\s+(\d+)/i);
+      if (!match) {
+        return `Invalid JSON: ${parseError.message}`;
+      }
+
+      const position = Number(match[1]);
+      const prefix = rawText.slice(0, position);
+      const lines = prefix.split("\n");
+      const line = lines.length;
+      const column = lines[lines.length - 1].length + 1;
+      return `Invalid JSON at line ${line}, column ${column}: ${parseError.message}`;
+    }
+
+    function parseJsonSafely(rawText) {
+      return JSON.parse(rawText);
+    }
+
+    function formatJsonString(rawText) {
+      const parsed = parseJsonSafely(rawText);
+      return JSON.stringify(parsed, null, 2);
+    }
+
+    // Repair Step 1: Replace single-quoted strings with double-quoted strings.
+    function repairSingleQuotes(text) {
+      return text.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, content) => {
+        const escapedContent = content.replace(/"/g, '\\"');
+        return `"${escapedContent}"`;
+      });
+    }
+
+    // Repair Step 2: Add quotes around unquoted object keys.
+    function repairUnquotedKeys(text) {
+      return text.replace(/([{,]\s*)([A-Za-z_$][A-Za-z0-9_$-]*)(\s*:)/g, '$1"$2"$3');
+    }
+
+    // Repair Step 3: Remove trailing commas before closing braces/brackets.
+    function repairTrailingCommas(text) {
+      return text.replace(/,\s*([}\]])/g, "$1");
+    }
+
+    // Repair Step 4: Add missing closing braces/brackets based on balance outside strings.
+    function repairMissingClosers(text) {
+      const stack = [];
+      let inString = false;
+      let escapeNext = false;
+
+      for (let i = 0; i < text.length; i += 1) {
+        const ch = text[i];
+
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (ch === "\\") {
+          escapeNext = true;
+          continue;
+        }
+
+        if (ch === '"') {
+          inString = !inString;
+          continue;
+        }
+
+        if (inString) continue;
+
+        if (ch === "{" || ch === "[") {
+          stack.push(ch);
+        } else if (ch === "}" || ch === "]") {
+          if (!stack.length) continue;
+          const top = stack[stack.length - 1];
+          const isPair = (top === "{" && ch === "}") || (top === "[" && ch === "]");
+          if (isPair) stack.pop();
+        }
+      }
+
+      if (!stack.length) return text;
+
+      let closers = "";
+      for (let i = stack.length - 1; i >= 0; i -= 1) {
+        closers += stack[i] === "{" ? "}" : "]";
+      }
+
+      return `${text}${closers}`;
+    }
+
+    // Runs all repair passes in sequence.
+    function autoRepairJson(text) {
+      let repaired = text;
+      repaired = repairSingleQuotes(repaired);
+      repaired = repairUnquotedKeys(repaired);
+      repaired = repairTrailingCommas(repaired);
+      repaired = repairMissingClosers(repaired);
+      return repaired;
+    }
+
+    function tryAutoFixAndFormat(rawText) {
+      const repaired = autoRepairJson(rawText);
+      const formatted = formatJsonString(repaired);
+      return { repaired, formatted };
+    }
+
+    function handleFormat() {
+      const rawText = inputJson.value.trim();
+
+      if (!rawText) {
+        outputJson.value = "";
+        setStatus("Input is empty. Paste JSON to continue.", "error");
+        updateCounters();
+        return;
+      }
+
+      try {
+        outputJson.value = formatJsonString(rawText);
+        setStatus("JSON formatted successfully.", "success");
+      } catch (firstError) {
+        try {
+          const { repaired, formatted } = tryAutoFixAndFormat(rawText);
+          outputJson.value = formatted;
+          inputJson.value = repaired;
+          setStatus("JSON auto-corrected successfully.", "success");
+        } catch (repairError) {
+          outputJson.value = "";
+          const originalError = getErrorWithLineColumn(rawText, firstError);
+          const repairedInput = autoRepairJson(rawText);
+          const repairMessage = getErrorWithLineColumn(repairedInput, repairError);
+          setStatus(`${originalError} Auto-fix failed. ${repairMessage}`, "error");
+        }
+      }
+
+      updateCounters();
+    }
+
+    function handleValidate() {
+      const rawText = inputJson.value.trim();
+
+      if (!rawText) {
+        setStatus("Input is empty. Paste JSON to continue.", "error");
+        return;
+      }
+
+      try {
+        parseJsonSafely(rawText);
+        setStatus("JSON is valid.", "success");
+      } catch (error) {
+        setStatus(getErrorWithLineColumn(rawText, error), "error");
+      }
+    }
+
+    function handleAutoFix() {
+      const rawText = inputJson.value.trim();
+
+      if (!rawText) {
+        setStatus("Input is empty. Paste JSON to continue.", "error");
+        return;
+      }
+
+      try {
+        const { repaired, formatted } = tryAutoFixAndFormat(rawText);
+        outputJson.value = formatted;
+        inputJson.value = repaired;
+        setStatus("JSON auto-corrected successfully.", "success");
+      } catch (error) {
+        outputJson.value = "";
+        const repairedInput = autoRepairJson(rawText);
+        setStatus(`Auto Fix could not fully repair input. ${getErrorWithLineColumn(repairedInput, error)}`, "error");
+      }
+
+      updateCounters();
+    }
+
+    function handleClear() {
+      inputJson.value = "";
+      outputJson.value = "";
+      setStatus("Cleared.");
+      updateCounters();
+      inputJson.focus();
+    }
+
+    async function handleCopy() {
+      if (!outputJson.value) {
+        setStatus("Nothing to copy. Format or Auto Fix JSON first.", "error");
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(outputJson.value);
+        } else {
+          outputJson.removeAttribute("readonly");
+          outputJson.select();
+          document.execCommand("copy");
+          outputJson.setAttribute("readonly", "readonly");
+          window.getSelection().removeAllRanges();
+        }
+        setStatus("Formatted JSON copied to clipboard.", "success");
+      } catch {
+        setStatus("Copy failed. Please copy manually.", "error");
+      }
+    }
+
+    formatBtn.addEventListener("click", handleFormat);
+    validateBtn.addEventListener("click", handleValidate);
+    autoFixBtn.addEventListener("click", handleAutoFix);
+    clearBtn.addEventListener("click", handleClear);
+    copyBtn.addEventListener("click", handleCopy);
+    inputJson.addEventListener("input", updateCounters);
+
+    updateCounters();
+    inputJson.focus();
+  </script>
+</body>
+</html>
