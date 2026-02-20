@@ -1,44 +1,93 @@
-# Dev Toolkit 🛠️
+# 🚀 Dev Toolkit
 
-Dev Toolkit is a simple and powerful collection of developer tools built using HTML, CSS, and JavaScript.
+A collection of useful frontend developer tools built using HTML, CSS, and JavaScript.
 
-Currently includes:
+This toolkit currently includes:
 
-- ✅ JSON Formatter
-- ✅ HTML Beautifier
+- ✨ HTML Beautifier  
+- 🎨 CSS Minifier  
+- 🧾 JSON Formatter  
+
+All tools are built from scratch without external libraries.
 
 ---
 
-## 🚀 Tools Included
+## 🔧 Tools Included
 
-### 🔹 JSON Formatter
+### 1️⃣ HTML Beautifier
+Clean and properly format messy HTML code with correct indentation and structure validation.
 
-A fast and easy-to-use JSON formatting tool.
+**Features:**
+- Custom indentation (2 or 4 spaces)
+- Inline & block tag handling
+- Basic HTML structure validation
+- Copy formatted output
+- Line number display
 
-Features:
-- Format JSON with proper indentation
-- Validate JSON
-- Show error messages for invalid JSON
-- Minify JSON
+---
+
+### 2️⃣ CSS Minifier
+Minify CSS by removing:
+- Extra spaces
+- Comments
+- Unnecessary line breaks
+
+**Features:**
+- Fast compression
+- Clean UI
+- Copy minified output
+
+---
+
+### 3️⃣ JSON Formatter
+Format and validate JSON data instantly.
+
+**Features:**
+- Pretty print JSON
+- Error detection
+- Validation message display
 - Copy formatted output
 
 ---
 
-### 🔹 HTML Beautifier
+## 🌐 Live Demo
 
-Clean and organize messy HTML code instantly.
+HTML Beautifier  
+👉 https://vanaja-kothai19.github.io/dev-toolkit/html-beautifier/
 
-Features:
-- Auto-indent HTML
-- Improve code readability
-- Format unstructured HTML
-- Simple developer-friendly UI
+CSS Minifier  
+👉 https://vanaja-kothai19.github.io/dev-toolkit/css-minifier/
+
+JSON Formatter  
+👉 https://vanaja-kothai19.github.io/dev-toolkit/json-formatter/
 
 ---
 
-## 🧩 Technologies Used
+## 🛠 Tech Stack
 
-- HTML
-- CSS
-- JavaScript (Vanilla JS)
+- HTML5  
+- CSS3  
+- Vanilla JavaScript  
 
+---
+
+## 💼 Purpose
+
+This project was built to:
+- Strengthen DOM manipulation skills
+- Practice real-world tool development
+- Improve validation logic implementation
+- Prepare for Frontend Developer roles
+
+---
+
+## 👩‍💻 Author
+
+**Vanaja Kothai**  
+Frontend Developer  
+
+GitHub: https://github.com/vanaja-kothai19
+
+---
+
+⭐ If you like this project, feel free to star the repository!
