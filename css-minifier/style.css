@@ -1,0 +1,201 @@
+/* Theme tokens */
+:root {
+  --bg: #0f1117;
+  --panel: #171a24;
+  --panel-border: #2a3142;
+  --text: #e8ebf3;
+  --muted: #a3afc2;
+  --accent: #4db6ff;
+  --accent-strong: #289cf1;
+  --ok: #29c36a;
+  --warn: #ff6b6b;
+  --editor-bg: #0d1016;
+  --line-bg: #111623;
+  --line-text: #6f7d94;
+}
+
+/* Base reset */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top right, #1b2234 0%, var(--bg) 40%);
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+}
+
+/* Sticky header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(15, 17, 23, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 20px;
+}
+
+.header-inner h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.4px;
+}
+
+.header-inner p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.app-main {
+  max-width: 1200px;
+  margin: 18px auto 26px;
+  padding: 0 20px;
+}
+
+/* Action row */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.btn {
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn:hover {
+  border-color: #41506d;
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #071019;
+}
+
+.btn-primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.status-message {
+  min-height: 24px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  color: var(--muted);
+  padding: 10px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: rgba(20, 24, 34, 0.7);
+}
+
+.status-message.success {
+  color: var(--ok);
+  border-color: rgba(41, 195, 106, 0.45);
+  background: rgba(41, 195, 106, 0.1);
+}
+
+.status-message.warning {
+  color: #ffd166;
+  border-color: rgba(255, 209, 102, 0.45);
+  background: rgba(255, 209, 102, 0.1);
+}
+
+.status-message.error {
+  color: var(--warn);
+  border-color: rgba(255, 107, 107, 0.45);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* Editor layout */
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.editor-card {
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.editor-head {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.editor-head h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #d6deed;
+}
+
+/* Editor shell with simulated line numbers */
+.editor-shell {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  height: 430px;
+}
+
+.line-numbers {
+  margin: 0;
+  padding: 12px 8px 12px 0;
+  background: var(--line-bg);
+  color: var(--line-text);
+  text-align: right;
+  border-right: 1px solid var(--panel-border);
+  font: 14px/1.6 Consolas, "Courier New", monospace;
+  overflow: hidden;
+  user-select: none;
+}
+
+.code-area {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  margin: 0;
+  padding: 12px;
+  background: var(--editor-bg);
+  color: var(--text);
+  font: 14px/1.6 Consolas, "Courier New", monospace;
+  overflow: auto;
+  white-space: pre;
+}
+
+.code-area::placeholder {
+  color: #6e7d95;
+}
+
+.code-area[readonly] {
+  color: #dce6f7;
+}
+
+/* Responsive stacking for mobile */
+@media (max-width: 900px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+}

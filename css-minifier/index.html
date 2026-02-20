@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Minifier Tool</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <h1>CSS Minifier</h1>
+      <p>Developer-ready CSS compression with validation and auto-fix.</p>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Action buttons -->
+    <section class="controls" aria-label="Tool actions">
+      <button id="minifyBtn" class="btn btn-primary" type="button">Minify CSS</button>
+      <button id="clearBtn" class="btn" type="button">Clear</button>
+      <button id="copyBtn" class="btn" type="button">Copy Output</button>
+    </section>
+
+    <!-- Validation and success messages -->
+    <section id="statusMessage" class="status-message" role="status" aria-live="polite"></section>
+
+    <!-- Two-editor responsive layout -->
+    <section class="editor-grid">
+      <article class="editor-card">
+        <div class="editor-head">
+          <h2>Input CSS</h2>
+        </div>
+        <div class="editor-shell">
+          <pre id="inputLines" class="line-numbers" aria-hidden="true">1</pre>
+          <textarea
+            id="inputCss"
+            class="code-area"
+            spellcheck="false"
+            placeholder="Paste your messy CSS here..."
+          ></textarea>
+        </div>
+      </article>
+
+      <article class="editor-card">
+        <div class="editor-head">
+          <h2>Minified Output</h2>
+        </div>
+        <div class="editor-shell">
+          <pre id="outputLines" class="line-numbers" aria-hidden="true">1</pre>
+          <textarea
+            id="outputCss"
+            class="code-area"
+            spellcheck="false"
+            readonly
+            placeholder="Minified CSS will appear here..."
+          ></textarea>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
